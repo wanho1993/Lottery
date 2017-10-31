@@ -1,0 +1,234 @@
+﻿<html>
+<head>
+<meta charset="utf-8">
+<title>h5随机抽中手机号码抽奖代码 </title>
+<link rel="stylesheet" type="text/css" href="bulma.css">
+<style>
+
+*{padding:0; margin:0;}
+body{
+background:url('img/bg.jpg') no-repeat;
+background-size:cover;
+overflow: hidden;
+}
+.b-box{width:400px; height:200; position:fixed; top:50%; left:50%; margin:-50px 0 0 -200px; text-align:center; }
+.result-box{
+	 background-color:#fff; text-align:center; line-height:80px; font-size:34px;min-height: 80px;
+}
+button{ width:200px; height:50px; line-height:50px; margin-top:30px; border:none; color:#fff; font-size:24px;}
+button:focus{outline:none;}
+div.message-body{padding:0.5em 0.25em}
+.message-body>.table{min-height: 50px;margin-bottom: 0.5em}
+#modal-winner .modal-content{width:680px;}
+</style>
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script src="js/underscore-min.js"></script>
+<script src="js/jquery.newsTicker.min.js"></script>
+<script src="js/papaparse.min.js"></script>
+</head>
+<body>
+
+<div class="container is-widescreen" style="margin-top:300px;">
+	<div class="columns is-mobile">
+  	<div class="column is-4 is-offset-8" >
+	<article class="message is-danger">
+	<div class="message-header">
+		<strong>一等奖名单(1人)</strong>
+		
+	</div>
+	<div class="message-body">
+		<table id="tbl-level1" class="table is-striped is-fullwidth">
+		
+		</table>
+	</div>
+	</article>
+	<article class="message is-success">
+	<div class="message-header">
+		<strong>二等奖名单(3人)</strong>
+		
+	</div>
+	<div class="message-body">
+		<table id="tbl-level2" class="table is-striped is-fullwidth">
+		
+		</table>
+	</div>
+	</article>
+	<article class="message is-info">
+	<div class="message-header">
+		<strong>三等奖名单(10人)</strong>
+		
+	</div>
+	<div class="message-body">
+		<table id="tbl-level3" class="table is-striped is-fullwidth">
+			
+			
+		</table>
+	</div>
+	</article>
+	  </div>
+	</div>
+</div>
+
+
+<div class="b-box">
+	<ul class="result-box" id="result-box" >
+			
+	</ul>
+	<input type="file" name="file" id="file" style="display:none"/>
+	<button id="btn-start" class="button is-link is-large">开始抽奖</button>
+	<br/>
+	<div style="margin-top: 20px;" class="select">
+
+	<select style="width:200px;" id="gift-level">
+		<option value="3">三等奖</option>
+		<option value="2">二等奖</option>
+		<option value="1">一等奖</option>
+	</select>
+	</div>
+	
+</div><!--container-->
+
+<div class="modal" id="modal-winner">
+  <div class="modal-background"></div>
+  <div class="modal-content">
+    <div class="box">
+
+	</div>
+  </div>
+  <button class="modal-close is-large" aria-label="close"></button>
+</div>
+
+
+<script type="text/javascript">
+
+$('button.modal-close').click(function(){
+	$(this).parents('.modal').removeClass('is-active');
+	
+})
+
+function insertWinner(winnerIndex,level)
+{
+	var gift = ['一等奖！价值10800元课程抵用券1张！','二等奖！价值5800元课程抵用券1张！','三等奖！价值2800元课程抵用券1张！']
+	var html = '<p class="is-size-3">恭喜<strong class="has-text-link">'+data[winnerIndex][0] +'</strong>同学<br/>获得<strong class="has-text-danger">'+gift[level-1]+'</strong></p>'
+	
+	$('#modal-winner .box').html(html);
+	$('#modal-winner').addClass('is-active');
+	var winners = $('#tbl-level'+level+' tr').length+1;
+	var tr ='<tr><th>'+winners +'</th><th>'+ data[winnerIndex][0] +'&nbsp;'+maskPhone(data[winnerIndex][1]) +'</th></tr>'
+	$(tr).appendTo($('#tbl-level'+level));
+	data.splice(winnerIndex,1);
+	initData(data);
+
+}
+
+
+$('#btn-start').text('点击加载数据');
+var data=[];//参与人员
+var winnerCounts=[1,3,10];
+var giftLevelStr = ['一等奖','二等奖','三等奖'];
+var state = 'initing';
+var speed;
+var add;
+var nt_example3 = $('#result-box').newsTicker({
+    row_height: 80,
+    max_rows: 1,
+    duration: 0,
+    speed: 10,
+    autostart: 0,
+    pauseOnHover: 0,
+    hasMoved: function() {
+    	if (speed > 700) {
+    		$('#result-box').newsTicker("stop");
+    		console.log('stop')
+			//获奖名单
+			insertWinner($('#result-box li:first').attr('index'),$('#gift-level').val());
+    		
+    		setTimeout(function() {
+    			$('#btn-start').text("开始抽奖");
+    			state = 'stopped';
+    		},2500);
+    		
+    	}
+    	else if (state == 'stopping') {
+    		add = add * 1.4;
+    		speed = speed + add;
+    		console.log(speed)
+    		$('#result-box').newsTicker('updateOption', "duration", speed + 25);
+    		$('#result-box').newsTicker('updateOption', "speed", speed);
+    	}
+    }
+});
+
+function maskPhone(mobile)
+{
+	//隐藏中间4位
+	var pattern =/(\d{3})\d{4}(?=\d+)/g;
+	return mobile.replace(pattern,'$1****');
+}
+function initData(csvdata){
+	data = _.shuffle(csvdata);
+	var content = '';
+	for(var i =0;i<data.length;i++)
+	{
+		if(data[i].length !=2)
+		{
+			continue;
+		}
+		content += '<li index="'+ i +'">'+ maskPhone(data[i][1])+'&nbsp;'+data[i][0] +'</li>'
+	}
+	$('#result-box').empty();
+	$(content).appendTo($('#result-box'));
+}
+
+$('#btn-start').click(function(){
+	if(state=='initing'){
+		$('#file').change(function(){
+			console.log('解析文件：file.path',$(this).val());
+			//调用papaparse插件解析csv
+			var file = this.files[0];
+			 Papa.parse(file,{
+				encoding:'utf-8',
+				complete:function(results){
+					if(results.data && results.data.length)
+					{
+						initData(results.data);
+						state='stopped';
+						$('#btn-start').text('开始抽奖');
+					}
+				}
+			})
+			
+		})
+		$('#file').click();
+		
+		
+		return;
+	}
+	if (state == 'stopped') {
+		var level =$('#gift-level').val()
+		var winners = $('#tbl-level'+level+' tr').length;
+		if(winners==winnerCounts[level-1])
+		{
+			alert(giftLevelStr[level-1]+'已经抽完了！');
+			return;
+		}
+    	state = 'turning';
+    	speed = 1;
+    	add = 1;
+    	$('#result-box').newsTicker('updateOption', "duration", 0);
+    	$('#result-box').newsTicker('updateOption', "speed", speed);
+    	nt_example3.newsTicker('start');
+    	$(this).text("STOP");
+    }
+    else if (state == 'turning') {
+    	state = 'stopping';
+    	$(this).text("幸运降临中...");
+    }
+});
+
+
+</script>
+
+</body>
+</html>
+
