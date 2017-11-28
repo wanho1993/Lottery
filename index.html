@@ -31,7 +31,7 @@ div.message-body{padding:0.5em 0.25em}
 <div class="container is-widescreen" style="margin-top:300px;">
 	<div class="columns is-mobile">
   	<div class="column is-4 is-offset-8" >
-	<article class="message is-danger">
+	<article class="message is-danger" id="panel-0">
 	<div class="message-header">
 		<strong>一等奖名单(1人)</strong>
 		
@@ -42,7 +42,7 @@ div.message-body{padding:0.5em 0.25em}
 		</table>
 	</div>
 	</article>
-	<article class="message is-success">
+	<article class="message is-success" id="panel-1">
 	<div class="message-header">
 		<strong>二等奖名单(3人)</strong>
 		
@@ -53,7 +53,7 @@ div.message-body{padding:0.5em 0.25em}
 		</table>
 	</div>
 	</article>
-	<article class="message is-info">
+	<article class="message is-info" id="panel-2">
 	<div class="message-header">
 		<strong>三等奖名单(10人)</strong>
 		
@@ -79,7 +79,7 @@ div.message-body{padding:0.5em 0.25em}
 	<br/>
 	<div style="margin-top: 20px;" class="select">
 
-	<select style="width:200px;" id="gift-level">
+	<select style="min-width:200px;" id="gift-level">
 		<option value="3">三等奖</option>
 		<option value="2">二等奖</option>
 		<option value="1">一等奖</option>
@@ -100,6 +100,16 @@ div.message-body{padding:0.5em 0.25em}
 
 
 <script type="text/javascript">
+var gift = ['HCNP-BigData考试券','HCNA-BigData考试券','HCNA-BigData免费培训券'];
+$('.container article').each(function(index,item){
+	$(this).find('.message-header strong').text(gift[index]);
+})
+$('#gift-level>option').each(function(){
+	this.text = gift[this.value-1];
+})
+
+
+
 
 $('button.modal-close').click(function(){
 	$(this).parents('.modal').removeClass('is-active');
@@ -108,23 +118,23 @@ $('button.modal-close').click(function(){
 
 function insertWinner(winnerIndex,level)
 {
-	var gift = ['一等奖！价值10800元课程抵用券1张！','二等奖！价值5800元课程抵用券1张！','三等奖！价值2800元课程抵用券1张！']
-	var html = '<p class="is-size-3">恭喜<strong class="has-text-link">'+data[winnerIndex][0] +'</strong>同学<br/>获得<strong class="has-text-danger">'+gift[level-1]+'</strong></p>'
+	
+	var html = '<p class="is-size-3">恭喜<strong class="has-text-link">'+data[winnerIndex][0] +'</strong>同学<br/>获得<strong class="has-text-danger">'+gift[level-1]+'!</strong></p>'
 	
 	$('#modal-winner .box').html(html);
 	$('#modal-winner').addClass('is-active');
 	var winners = $('#tbl-level'+level+' tr').length+1;
 	var tr ='<tr><th>'+winners +'</th><th>'+ data[winnerIndex][0] +'&nbsp;'+maskPhone(data[winnerIndex][1]) +'</th></tr>'
 	$(tr).appendTo($('#tbl-level'+level));
-	data.splice(winnerIndex,1);
-	initData(data);
-
+	data.splice(winnerIndex,1); //移除已中奖名单
+	initData(data); //重新随机名单
+	
 }
 
 
 $('#btn-start').text('点击加载数据');
 var data=[];//参与人员
-var winnerCounts=[1,3,10];
+var winnerCounts=[3,7,5];
 var giftLevelStr = ['一等奖','二等奖','三等奖'];
 var state = 'initing';
 var speed;
